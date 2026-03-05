@@ -29,10 +29,14 @@
 box-sizing: border-box;
 }
 
+html {
+scroll-behavior: smooth;
+}
+
 body {
 font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 margin: 0;
-padding: 0;
+padding: 0 120px 0 0; /* leave space for right-side nav */
 background: linear-gradient(135deg, var(--light-bg) 0%, #FFF5F7 50%, #FEF2F4 100%);
 color: var(--dark-text);
 line-height: 1.7;
@@ -91,37 +95,71 @@ letter-spacing: 0.01em;
 
 nav {
 background: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
-padding: 0;
+/* right-side vertical bar (hidden by default) */
+position: fixed;
+right: -160px; /* hidden offscreen */
+top: 50%;
+transform: translateY(-50%);
+display: flex;
+flex-direction: column;
+align-items: center;
+padding: 20px 10px;
+border-radius: 8px 0 0 8px;
 box-shadow: var(--shadow-light);
-position: sticky;
-top: 0;
 z-index: 1000;
-backdrop-filter: blur(10px);
-border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+max-height: 90vh;
+overflow-y: auto;
+transition: right 0.3s ease;
 }
 
+nav.open {
+right: 0;
+}
+
+
 .navbar-container {
-max-width: 1200px;
-margin: 0 auto;
-padding: 0 20px;
+/* vertical layout for side nav */
 display: flex;
-justify-content: center;
+flex-direction: column;
 align-items: center;
-min-height: 70px;
+}
+
+/* toggle button */
+.nav-toggle {
+position: fixed;
+right: 0;
+top: 50%;
+transform: translateY(-50%);
+background: var(--primary-color);
+color: white;
+padding: 10px 12px;
+border-radius: 8px 0 0 8px;
+box-shadow: var(--shadow-light);
+cursor: pointer;
+z-index: 1001;
+font-size: 1.2rem;
+transition: right 0.3s ease;
+}
+
+.nav-toggle.open {
+right: 160px;
 }
 
 nav a {
 color: white;
-margin: 0 25px;
+margin: 10px 0;
 text-decoration: none;
 font-weight: 500;
 font-size: 1rem;
-padding: 12px 20px;
+padding: 10px 14px;
 border-radius: 50px;
 transition: var(--transition);
 position: relative;
 overflow: hidden;
+text-align: center;
+width: 100%;
 }
+
 
 nav a::before {
 content: '';
@@ -134,6 +172,11 @@ background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transp
 transition: left 0.5s;
 }
 
+/* adjust cart link icon spacing */
+#cart-link {
+margin: 10px 0;
+}
+
 nav a:hover::before {
 left: 100%;
 }
@@ -142,6 +185,13 @@ nav a:hover {
 background: rgba(255, 255, 255, 0.1);
 transform: translateY(-2px);
 box-shadow: 0 8px 25px rgba(139, 21, 56, 0.2);
+}
+
+nav a.active {
+background: rgba(255, 255, 255, 0.25);
+border-bottom: 3px solid white;
+box-shadow: 0 8px 25px rgba(139, 21, 56, 0.25);
+font-weight: 600;
 }
 
 section {
@@ -1543,6 +1593,9 @@ font-size: 2em;
 <p>"Love at Every Bite"</p>
 </header>
 
+<!-- sidebar toggle button -->
+<div id="nav-toggle" class="nav-toggle">☰</div>
+
 <nav>
 <div class="navbar-container">
 <a href="#home">Home</a>
@@ -2414,6 +2467,61 @@ textArea.select();
 document.execCommand('copy');
 document.body.removeChild(textArea);
 }
+
+// Active Navigation Link Handler
+const navLinks = document.querySelectorAll('nav a');
+const sections = document.querySelectorAll('section[id]');
+
+// Sidebar toggle
+const nav = document.querySelector('nav');
+const toggleBtn = document.getElementById('nav-toggle');
+
+function toggleNav() {
+nav.classList.toggle('open');
+toggleBtn.classList.toggle('open');
+}
+
+toggleBtn.addEventListener('click', toggleNav);
+
+
+function updateActiveNavLink() {
+let currentSection = '';
+
+sections.forEach(section => {
+const sectionTop = section.offsetTop - 150;
+const sectionBottom = sectionTop + section.offsetHeight;
+const scrollPosition = window.scrollY;
+
+if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
+currentSection = section.getAttribute('id');
+}
+});
+
+navLinks.forEach(link => {
+link.classList.remove('active');
+if (link.getAttribute('href') === '#' + currentSection) {
+link.classList.add('active');
+}
+});
+}
+
+// Update active link on scroll
+window.addEventListener('scroll', updateActiveNavLink);
+// Update active link on page load
+window.addEventListener('load', updateActiveNavLink);
+
+// Smooth scroll to section when nav link is clicked
+navLinks.forEach(link => {
+link.addEventListener('click', (e) => {
+const href = link.getAttribute('href');
+if (href.startsWith('#')) {
+updateActiveNavLink();
+// close sidebar after click
+nav.classList.remove('open');
+toggleBtn.classList.remove('open');
+}
+});
+});
 </script>
 
 </body>
